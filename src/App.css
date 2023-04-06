@@ -13,6 +13,58 @@
   }
 }
 
+/* Center the component */
+.secret-generator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Style the buttons */
+.secret-generator button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 10px;
+  cursor: pointer;
+}
+
+.secret-generator button:hover {
+  background-color: #3e8e41;
+}
+
+/* Style the input fields */
+.secret-generator input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
+.secret-generator input[type=password]:focus {
+  border: 2px solid #4CAF50;
+}
+
+/* Style the error message */
+.secret-generator .error-message {
+  color: red;
+}
+
+/* Style the secret text */
+.secret-generator p {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -32,6 +84,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
