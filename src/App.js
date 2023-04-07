@@ -2,133 +2,142 @@ import React, { useEffect, useState } from 'react';
 import "./App.css";
 import CryptoJS from 'crypto-js';
 
-const SecretGenerator = () => {
-  const [secret, setSecret] = useState('');
-  const [newSecret, setNewSecret] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+class SecretGenerator extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      secret: '',
+      newSecret: '',
+      password: '',
+      confirmPassword: '',
+      loggedIn: false,
+      errorMessage: ''
+    };
+  }
 
-  const generateSecret = () => {
-    // Generate a random secret
-    const newSecret = Math.random().toString(36).slice(2);
-    setSecret(newSecret);
-    localStorage.setItem('secret', encryptSecret(newSecret, password));
-  };
-
-  const saveSecret = (newSecret) => {
-    // Generate a random secret
-    setSecret(newSecret);
-    localStorage.setItem('secret', encryptSecret(newSecret, password));
-  };
-
-  const generateSecretToShow = () => {
-    // Generate a random secret
-    const newSecret = Math.random().toString(36).slice(2);
-    setNewSecret(newSecret);
-  };
-
-  useEffect(() => {
-    // Update the document title using the browser API
+  componentDidMount() {
     const encryptedSecret = localStorage.getItem('secret');
     if (encryptedSecret) {
-      setSecret(encryptedSecret);
+      this.setState({ secret: encryptedSecret });
     } else {
-      generateSecretToShow();
+      this.generateSecretToShow();
     }
-  }, []);
+  }
 
-  const encryptSecret = (secret, password) => {
-    // Encrypt the secret using AES encryption and the password as the key
+  generateSecret = () => {
+    const newSecret = Math.random().toString(36).slice(2);
+    this.setState({ secret: newSecret });
+    localStorage.setItem('secret', this.encryptSecret(newSecret, this.state.password));
+  };
+
+  saveSecret = (newSecret) => {
+    this.setState({ secret: newSecret });
+    localStorage.setItem('secret', this.encryptSecret(newSecret, this.state.password));
+  };
+
+  generateSecretToShow = () => {
+    const newSecret = Math.random().toString(36).slice(2);
+    this.setState({ newSecret });
+  };
+
+  encryptSecret = (secret, password) => {
     return CryptoJS.AES.encrypt(secret, password).toString();
   };
 
-  const decryptSecret = (encryptedSecret, password) => {
-    // Decrypt the encrypted secret using AES decryption and the password as the key
+  decryptSecret = (encryptedSecret, password) => {
     return CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8);
   };
 
-  const handleVerifySecret = () => {
-    if (password.trim() === '') {
-      setErrorMessage('Password is required');
+  handleVerifySecret = () => {
+    if (this.state.password.trim() === '') {
+      this.setState({ errorMessage: 'Password is required' });
     } else {
       try {
         const encryptedSecretKey = localStorage.getItem('secret');
-        let plainSecretText = decryptSecret(encryptedSecretKey, password);
+        let plainSecretText = this.decryptSecret(encryptedSecretKey, this.state.password);
         if (!plainSecretText) {
-          setErrorMessage('System is unable to authenticate you');
+          this.setState({ errorMessage: 'System is unable to authenticate you' });
         } else {
-          setLoggedIn(true);
-          setErrorMessage('');
+          this.setState({ loggedIn: true, errorMessage: '' });
         }
       } catch (e) {
-        setErrorMessage('System is unable to authenticate you');
+        this.setState({ errorMessage: 'Unable to authenticate you' });
       }
     }
   };
 
-  const handleNextClick = () => {
-    if (password.trim() === '' || confirmPassword.trim() === '') {
-      setErrorMessage('Both password fields are required');
-    } else if (password === confirmPassword) {
-      saveSecret(newSecret);
-      setLoggedIn(true);
-      setErrorMessage('');
+  handleNextClick = () => {
+    if (this.state.password.trim() === '' || this.state.confirmPassword.trim() === '') {
+      this.setState({ errorMessage: 'Both password fields are required' });
+    } else if (this.state.password === this.state.confirmPassword) {
+      this.saveSecret(this.state.newSecret);
+      this.setState({ loggedIn: true, errorMessage: '' });
     } else {
-      setErrorMessage('Passwords do not match!');
+      this.setState({ errorMessage: 'Passwords do not match!' });
     }
   };
 
-  const handleLogoutClick = () => {
-    // localStorage.removeItem('secret');
-    setPassword('');
-    setConfirmPassword('');
-    setLoggedIn(false);
+  handleLogoutClick = () => {
+    this.setState({
+      password: '',
+      confirmPassword: '',
+      loggedIn: false
+    });
   };
 
-  const handleResetClick = () => {
+  handleResetClick = () => {
     localStorage.clear();
-    setSecret('');
-    setPassword('');
-    setConfirmPassword('');
-    setLoggedIn(false);
-    generateSecretToShow();
+    this.setState({
+      secret: '',
+      password: '',
+      confirmPassword: '',
+      loggedIn: false
+    });
+    this.generateSecretToShow();
   };
 
-  if (loggedIn) {
-    // Logged in user: show secret, regenerate button, and logout button
-    const encryptedSecret = localStorage.getItem('secret');
-    const decryptedSecret = decryptSecret(encryptedSecret, password);
-    return (
-      <div className="secret-generator">
-        <p>Your secret: {decryptedSecret || 'None'}</p>
-        <button onClick={generateSecret}>Regenerate</button>
-        <button onClick={handleLogoutClick}>Logout</button>
-      </div>
-    );
-  } else if (secret && !loggedIn) {
-    return (
-      <div className="secret-generator">
-        <input type="password" placeholder="Enter password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button onClick={handleVerifySecret}>Next</button>
-        <br />
-        <button onClick={handleResetClick}>Reset</button>
-        <p className="error-message">{errorMessage}</p>
-      </div>
-    )
-  } else {
-    // New user: show autogenerated secret and password fields
-    return (
-      <div className="secret-generator">
-        <p>Your secret: {newSecret || 'None'}</p>
-        <input type="password" placeholder="Enter password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-        <button onClick={handleNextClick}>Next</button>
-        <p className="error-message">{errorMessage}</p>
-      </div>
-    );
+  render() {
+    if (this.state.loggedIn) {
+      const encryptedSecret = localStorage.getItem('secret');
+      const decryptedSecret = this.decryptSecret(encryptedSecret, this.state.password);
+      return (
+        <div className="secret-generator">
+          <p>Your secret: {decryptedSecret || 'None'}</p>
+          <button onClick={this.generateSecret}>Regenerate</button>
+          <button onClick={this.handleLogoutClick}>Logout</button>
+        </div>
+      );
+    } else if (this.state.secret && !this.state.loggedIn) {
+      return (
+        <div className="secret-generator">
+          <input type="password"
+            onChange={(e) => this.setState({ password: e.target.value })}
+            value={this.state.password}
+            placeholder="Enter Password" />
+          <button onClick={this.handleVerifySecret}>Next</button>
+          <button onClick={this.handleResetClick}>Reset</button>
+          {this.state.errorMessage && <p className="error">{this.state.errorMessage}</p>}
+        </div>
+      );
+    } else {
+      return (
+        <div className="secret-generator">
+          <p>Secret: {this.state.newSecret}</p>
+          <input type="password"
+            onChange={(e) => this.setState({ password: e.target.value })}
+            value={this.state.password}
+            placeholder="Enter Password" />
+          <input type="password"
+            onChange={(e) => this.setState({ confirmPassword: e.target.value })}
+            value={this.state.confirmPassword}
+            placeholder="Confirm Password" />
+          <button onClick={this.handleNextClick}>Next</button>
+          {this.state.errorMessage && <p className="error">{this.state.errorMessage}</p>}
+
+        </div>
+      );
+    }
   }
-};
+}
 
 export default SecretGenerator;
