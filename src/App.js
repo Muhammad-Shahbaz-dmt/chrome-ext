@@ -61,7 +61,7 @@ class SecretGenerator extends React.Component {
           this.setState({ loggedIn: true, errorMessage: '' });
         }
       } catch (e) {
-        this.setState({ errorMessage: 'System is unable to authenticate you' });
+        this.setState({ errorMessage: 'Unable to authenticate you' });
       }
     }
   };
@@ -78,7 +78,6 @@ class SecretGenerator extends React.Component {
   };
 
   handleLogoutClick = () => {
-    localStorage.removeItem('secret');
     this.setState({
       password: '',
       confirmPassword: '',
@@ -123,8 +122,7 @@ class SecretGenerator extends React.Component {
     } else {
       return (
         <div className="secret-generator">
-          <p>Create a new secret</p>
-          <p>Generated Secret: {this.state.newSecret}</p>
+          <p>Secret: {this.state.newSecret}</p>
           <input type="password"
             onChange={(e) => this.setState({ password: e.target.value })}
             value={this.state.password}
